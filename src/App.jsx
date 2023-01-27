@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const initialState = {
   entities: [],
+  filter: 'all',
 };
 
 const reducer = (state = initialState, action) => {
@@ -25,9 +26,27 @@ const reducer = (state = initialState, action) => {
         entities: newTasks,
       };
     }
+    case 'filter/set': {
+      return {
+        ...state,
+        filter: action.payload,
+      };
+    }
     default:
       return state;
   }
+};
+
+const selectTasks = (state) => {
+  const { entities, filter } = state;
+
+  if (filter === 'complete') {
+    return entities.filter((task) => task.completed);
+  }
+  if (filter === 'incomplete') {
+    return entities.filter((task) => !task.completed);
+  }
+  return entities;
 };
 
 const TaskItem = ({ task }) => {
@@ -45,7 +64,7 @@ const TaskItem = ({ task }) => {
 const App = () => {
   const [value, setValue] = useState('');
   const dispatch = useDispatch();
-  const state = useSelector((x) => x);
+  const tasks = useSelector(selectTasks);
   const submit = (e) => {
     e.preventDefault();
     if (!value.trim()) {
@@ -61,11 +80,21 @@ const App = () => {
       <form onSubmit={submit}>
         <input value={value} onChange={(e) => setValue(e.target.value)} />
       </form>
-      <button>Show All Tasks</button>
-      <button>Completed</button>
-      <button>Incompleted</button>
+      <button onClick={() => dispatch({ type: 'filter/set', payload: 'all' })}>
+        Show All Tasks
+      </button>
+      <button
+        onClick={() => dispatch({ type: 'filter/set', payload: 'complete' })}
+      >
+        Completed
+      </button>
+      <button
+        onClick={() => dispatch({ type: 'filter/set', payload: 'incomplete' })}
+      >
+        Incompleted
+      </button>
       <ul>
-        {state.entities.map((task) => (
+        {tasks.map((task) => (
           <TaskItem key={task.id} task={task} />
         ))}
       </ul>
