@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
-import App, { reducer } from './App';
+import App from './App';
+import { asyncMiddleware } from './middlewares/async';
+import { reducer } from './features/tasks';
 
-const store = createStore(reducer);
+const store = createStore(reducer, applyMiddleware(asyncMiddleware));
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
