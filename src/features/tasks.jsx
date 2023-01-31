@@ -1,15 +1,22 @@
 import { useDispatch } from 'react-redux';
 import { combineReducers } from 'redux';
+import {
+  mac,
+  makeCrudReducer,
+  makeFetchingReducer,
+  makeSetReducer,
+  reduceReducers,
+} from './utils';
 
-const setPending = () => ({ type: 'tasks/pending' });
+const setPending = mac('tasks/pending');
 
-const setFulfilled = (payload) => ({ type: 'tasks/fulfilled', payload });
+const setFulfilled = mac('tasks/fulfilled', 'payload');
 
-const setError = (error) => ({ type: 'tasks/error', error: error.message });
+const setError = mac('tasks/error', 'error');
 
-const setComplete = (payload) => ({ type: 'task/complete', payload });
+const setComplete = mac('task/complete', 'payload');
 
-const setFilter = (payload) => ({ type: 'filter/set', payload });
+const setFilter = mac('filter/set', 'payload');
 
 const fetchThunk = () => async (dispatch) => {
   dispatch(setPending());
@@ -19,58 +26,23 @@ const fetchThunk = () => async (dispatch) => {
     const tasks = data.slice(0, 10);
     dispatch(setFulfilled(tasks));
   } catch (error) {
-    dispatch(setError());
+    dispatch(setError(error.message));
   }
 };
 
-const filterReducer = (state = 'all', action) => {
-  switch (action.type) {
-    case 'filter/set':
-      return action.payload;
-    default:
-      return state;
-  }
-};
+const filterReducer = makeSetReducer(['filter/set']);
 
-const initialFetching = { loading: 'idle', error: null };
-const fetchingReducer = (state = initialFetching, action) => {
-  switch (action.type) {
-    case 'tasks/pending': {
-      return { ...state, loading: 'pending' };
-    }
-    case 'tasks/fulfilled': {
-      return { ...state, loading: 'succeded' };
-    }
-    case 'tasks/error': {
-      return { error: action.error, loading: 'rejected' };
-    }
-    default: {
-      return state;
-    }
-  }
-};
+const fetchingReducer = makeFetchingReducer([
+  'tasks/pending',
+  'tasks/fulfilled',
+  'tasks/rejected',
+]);
 
-const tasksReducer = (state = [], action) => {
-  switch (action.type) {
-    case 'tasks/fulfilled': {
-      return action.payload;
-    }
-    case 'task/add': {
-      return state.concat({ ...action.payload });
-    }
-    case 'task/complete': {
-      const newTasks = state.map((task) => {
-        if (task.id === action.payload.id) {
-          return { ...task, completed: !task.completed };
-        }
-        return task;
-      });
-      return newTasks;
-    }
-    default:
-      return state;
-  }
-};
+const fulfilledReducer = makeSetReducer(['tasks/fulfilled']);
+
+const crudReducer = makeCrudReducer(['task/add', 'task/completed']);
+
+const tasksReducer = reduceReducers(crudReducer, fulfilledReducer);
 
 const reducer = combineReducers({
   tasks: combineReducers({
