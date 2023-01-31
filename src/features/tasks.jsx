@@ -1,18 +1,18 @@
 import { useDispatch } from 'react-redux';
 import { combineReducers } from 'redux';
 import {
+  asyncMac,
   mac,
   makeCrudReducer,
   makeFetchingReducer,
   makeSetReducer,
+  mat,
   reduceReducers,
 } from './utils';
 
-const setPending = mac('tasks/pending');
+const asyncTasks = mat('tasks');
 
-const setFulfilled = mac('tasks/fulfilled', 'payload');
-
-const setError = mac('tasks/error', 'error');
+const [setPending, setFulfilled, setError] = asyncMac(asyncTasks);
 
 const setComplete = mac('task/complete', 'payload');
 
@@ -32,11 +32,7 @@ const fetchThunk = () => async (dispatch) => {
 
 const filterReducer = makeSetReducer(['filter/set']);
 
-const fetchingReducer = makeFetchingReducer([
-  'tasks/pending',
-  'tasks/fulfilled',
-  'tasks/rejected',
-]);
+const fetchingReducer = makeFetchingReducer(asyncTasks);
 
 const fulfilledReducer = makeSetReducer(['tasks/fulfilled']);
 

@@ -1,3 +1,9 @@
+const mat = (entity) => [
+  `${entity}/pending`,
+  `${entity}/fulfilled`,
+  `${entity}/rejected`,
+];
+
 const mac =
   (type, ...argNames) =>
   (...args) => {
@@ -7,6 +13,12 @@ const mac =
     });
     return action;
   };
+
+const asyncMac = (asyncTypes) => [
+  mac(asyncTypes[0]),
+  mac(asyncTypes[1], 'payload'),
+  mac(asyncTypes[2], 'error'),
+];
 
 const reduceReducers =
   (...reducers) =>
@@ -68,4 +80,12 @@ const makeCrudReducer =
     }
   };
 
-export { mac, makeFetchingReducer, makeSetReducer, reduceReducers, makeCrudReducer };
+export {
+  mat,
+  mac,
+  asyncMac,
+  makeFetchingReducer,
+  makeSetReducer,
+  reduceReducers,
+  makeCrudReducer,
+};
